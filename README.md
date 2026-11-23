@@ -7,7 +7,7 @@ Aplicação web em Next.js para organizar receitas, despesas, contas fixas, hist
 - Node.js 20+
 - npm
 - Conta no Supabase
-- Conta no Vercel
+- Conta na Vercel
 
 ## Instalação local
 
@@ -17,7 +17,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Abra http://localhost:3000.
+Abra `http://localhost:3000`.
 
 ## Variáveis de ambiente
 
@@ -30,25 +30,30 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-chave-anon
 SUPABASE_SERVICE_ROLE_KEY=sua-chave-servico
 ```
 
-## Criação no Supabase
+`SUPABASE_SERVICE_ROLE_KEY` é um segredo de servidor: nunca use o prefixo
+`NEXT_PUBLIC_` e nunca a versione.
 
-1. Crie um projeto no Supabase.
-2. Abra SQL Editor.
-3. Execute `supabase/migrations/001_initial_finance_schema.sql`. Se já tinha aplicado a versão anterior, execute também `supabase/migrations/002_secure_existing_policies.sql`.
-4. Em **Authentication > Providers**, mantenha e-mail/senha ativo e desative novos cadastros públicos.
-5. Em **Authentication > Users**, crie manualmente a única conta usando o mesmo e-mail de `FINANCE_AUTH_EMAIL`.
-6. A migração já habilita RLS e limita o banco a usuários autenticados.
+## Configuração do Supabase
 
-## Autorização da conta
+1. Crie um projeto no Supabase e abra o SQL Editor.
+2. Execute, em ordem, todos os arquivos de `supabase/migrations/`.
+3. Em **Authentication > Providers**, mantenha e-mail/senha ativo e desative novos cadastros públicos.
+4. Em **Authentication > Users**, crie manualmente a única conta usando o mesmo e-mail de `FINANCE_AUTH_EMAIL`.
 
-A aplicação usa o Supabase Auth. O e-mail configurado em `FINANCE_AUTH_EMAIL` é a única conta aceita; a senha fica apenas no Supabase. A chave `SUPABASE_SERVICE_ROLE_KEY` é usada exclusivamente no servidor e nunca deve receber o prefixo `NEXT_PUBLIC_`.
+As migrações habilitam RLS e bloqueiam o acesso direto aos dados pela API pública do Supabase. A aplicação os acessa somente pela API do servidor, usando a chave de serviço.
 
-## Download e publicação na Vercel
+## Publicação na Vercel
 
-1. Faça o deploy do repositório no Vercel.
+1. Importe o repositório na Vercel.
 2. Adicione as variáveis do `.env.example` no painel de Environment Variables.
-3. Publique com a branch principal.
-4. Verifique se a rota `/login` carrega corretamente e se o login com a conta configurada funciona.
+3. Publique a branch principal.
+4. Verifique o login e a rota `/dashboard`.
+
+## Checklist para repositório público
+
+- O `.env.example` é um modelo seguro e deve ser versionado.
+- `.env.local`, arquivos em `data/`, exports do Supabase e chaves de serviço nunca devem ser versionados.
+- Caso um segredo tenha sido exposto fora desses arquivos, revogue-o no provedor antes de publicar.
 
 ## Testes
 
@@ -56,8 +61,3 @@ A aplicação usa o Supabase Auth. O e-mail configurado em `FINANCE_AUTH_EMAIL` 
 npm test
 npm run build
 ```
-
-## Limitações atuais
-
-- É necessário configurar o Supabase antes de executar ou publicar a aplicação; não há fallback local, para evitar perda de dados na Vercel.
-- A sessão tem duração de até oito horas. Ao expirar, basta entrar novamente.

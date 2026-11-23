@@ -1,4 +1,7 @@
--- Execute esta migração se a 001 já tiver sido aplicada com as políticas antigas.
+-- The server API accesses financial data with the Supabase service-role key,
+-- which bypasses RLS. Do not grant direct database access to authenticated
+-- users: an accidentally created account must not be able to query data via
+-- the public Supabase API.
 drop policy if exists "permit auth access" on public.app_settings;
 drop policy if exists "permit auth access" on public.financial_movements;
 drop policy if exists "permit auth access" on public.recurring_fixed_expenses;
@@ -8,12 +11,3 @@ drop policy if exists "authenticated users can access settings" on public.app_se
 drop policy if exists "authenticated users can access movements" on public.financial_movements;
 drop policy if exists "authenticated users can access recurring expenses" on public.recurring_fixed_expenses;
 drop policy if exists "authenticated users can access monthly balances" on public.monthly_balances;
-
-create policy "authenticated users can access settings" on public.app_settings
-  for all to authenticated using (true) with check (true);
-create policy "authenticated users can access movements" on public.financial_movements
-  for all to authenticated using (true) with check (true);
-create policy "authenticated users can access recurring expenses" on public.recurring_fixed_expenses
-  for all to authenticated using (true) with check (true);
-create policy "authenticated users can access monthly balances" on public.monthly_balances
-  for all to authenticated using (true) with check (true);
